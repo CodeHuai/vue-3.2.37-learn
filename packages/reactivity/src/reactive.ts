@@ -22,7 +22,7 @@ export const createReactiveObject = (
     return existingProxy
   }
 
-  // 如果不是，则需要根据 target 创建一个代理对象
+  // 如果不是，则需要根据 target 创建一个代理对象,对收据的收集和触发，都是在baseHandlers中进行处理的
   const proxy = new Proxy(target, baseHandlers)
 
   // 缓存代理对象
