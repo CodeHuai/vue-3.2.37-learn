@@ -1,4 +1,6 @@
-type KeyToDepMap = Map<any, ReactiveEffect>
+import { Dep, createDep } from './dep'
+
+type KeyToDepMap = Map<any, Dep>
 
 let activeEffect: ReactiveEffect | undefined
 
@@ -27,7 +29,22 @@ export const track = (target: object, key: unknown) => {
     targetMap.set(target, (depsMap = new Map()))
   }
 
-  depsMap.set(key, activeEffect)
+  let dep = depsMap.get(key)
+  if (!dep) {
+    depsMap.set(key, (dep = createDep()))
+  }
+
+  // dep?.add(activeEffect)
+  trackEffects(dep)
+}
+
+/**
+ * 利用 dep 依次跟踪指定 key 的所有 effect
+ * @param dep
+ */
+export function trackEffects(dep: Dep) {
+  // activeEffect! ： 断言 activeEffect 不为 null
+  dep.add(activeEffect!)
 }
 
 /**
@@ -43,12 +60,30 @@ export const trigger = (target: object, key: unknown, newValue: string) => {
     return
   }
 
-  const effect = depsMap.get(key) as ReactiveEffect
-  if (!effect) {
+  const effects: Dep | undefined = depsMap.get(key)
+  if (!effects) {
     return
   }
 
+  triggerEffects(effects)
+
   // effect.fn()
+}
+
+/**
+ * 依次触发 dep 中保存的依赖
+ */
+export function triggerEffects(dep: Dep) {
+  // 把 dep 构建为一个数组
+  const effects = Array.isArray(dep) ? dep : [...dep]
+  // 依次触发
+  for (const effect of effects) {
+    triggerEffect(effect)
+  }
+}
+
+export function triggerEffect(effect: ReactiveEffect) {
+  // 这里确实需要执行 run 方法，是为了重新 对 activeEffct 进行赋值
   effect.run()
 }
 
