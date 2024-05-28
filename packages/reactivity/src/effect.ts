@@ -17,3 +17,5 @@ export const track = (target: object, key: unknown) => {
 export const trigger = (target: object, key: unknown, newValue: string) => {
   console.log('trigger: 触发依赖')
 }
+
+export function effect<T = any>(fn: () => T) {}
