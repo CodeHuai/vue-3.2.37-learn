@@ -13,7 +13,8 @@
       const obj = reactive({
         name: '张三'
       })
-      console.log(obj)
+      console.log(obj.name) // 此时应该触发 track
+      obj.name = '李四' // 此时应该触发 trigger
     </script>
   </body>
 </html>
