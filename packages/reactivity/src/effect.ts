@@ -2,7 +2,7 @@ import { Dep, createDep } from './dep'
 
 type KeyToDepMap = Map<any, Dep>
 
-let activeEffect: ReactiveEffect | undefined
+export let activeEffect: ReactiveEffect | undefined
 
 /**
  * 收集所有依赖的 WeakMap 实例：

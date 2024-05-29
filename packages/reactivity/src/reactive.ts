@@ -1,4 +1,5 @@
 import { mutableHandlers } from './baseHandlers'
+import { isObject } from '@vue/shared'
 
 /**
  * 响应式 weakMap 缓存对象
@@ -38,4 +39,12 @@ export const createReactiveObject = (
  */
 export const reactive = (target: object) => {
   return createReactiveObject(target, mutableHandlers, reactiveMap)
+}
+
+/**
+ * 如果是对象则调用 reactive 的逻辑， 如果是原始数据类型就原样返回
+ * @param value api ref 传递过来的参数
+ */
+export const toReactive = <T extends unknown>(value: unknown): T => {
+  return isObject(value) ? reactive(value as object) : value
 }
