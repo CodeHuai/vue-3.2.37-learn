@@ -23,18 +23,19 @@ export const track = (target: object, key: unknown) => {
     return
   }
 
-  let depsMap = targetMap.get(target)
+  let depsMap = targetMap.get(target) //  这里获取的是一个 map对象
 
   if (!depsMap) {
     targetMap.set(target, (depsMap = new Map()))
   }
 
-  let dep = depsMap.get(key)
+  let dep = depsMap.get(key) // 获取set
   if (!dep) {
     depsMap.set(key, (dep = createDep()))
   }
 
   // dep?.add(activeEffect)
+  // 因为一个 key 可能对应多个 副作用函数，所以需要用set 收集起来
   trackEffects(dep)
 }
 
@@ -61,13 +62,11 @@ export const trigger = (target: object, key: unknown, newValue: string) => {
   }
 
   const effects: Dep | undefined = depsMap.get(key)
-  if (!effects) {
+  if (!effects || !effects.size) {
     return
   }
 
   triggerEffects(effects)
-
-  // effect.fn()
 }
 
 /**
@@ -101,6 +100,7 @@ export class ReactiveEffect<T = any> {
   constructor(public fn: () => T) {}
 
   run() {
+    // 将当前实例对象赋值给 全局的 activeEffect变量
     activeEffect = this
 
     return this.fn()
