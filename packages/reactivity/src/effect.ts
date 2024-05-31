@@ -1,6 +1,9 @@
+import { ComputedRefImpl } from './computed'
 import { Dep, createDep } from './dep'
 
 type KeyToDepMap = Map<any, Dep>
+
+export type EffectScheduler = (...args: any[]) => any
 
 export let activeEffect: ReactiveEffect | undefined
 
@@ -76,14 +79,31 @@ export function triggerEffects(dep: Dep) {
   // 把 dep 构建为一个数组
   const effects = Array.isArray(dep) ? dep : [...dep]
   // 依次触发
+  // for (const effect of effects) {
+  // 	triggerEffect(effect)
+  // }
+
+  // 不在依次触发，而是先触发所有的计算属性依赖，再触发所有的非计算属性依赖
   for (const effect of effects) {
-    triggerEffect(effect)
+    if (effect.computed) {
+      triggerEffect(effect)
+    }
+  }
+  for (const effect of effects) {
+    if (!effect.computed) {
+      triggerEffect(effect)
+    }
   }
 }
 
 export function triggerEffect(effect: ReactiveEffect) {
-  // 这里确实需要执行 run 方法，是为了重新 对 activeEffct 进行赋值
-  effect.run()
+  // 存在调度器就执行调度函数
+  if (effect.schedule) {
+    effect.schedule()
+  } else {
+    // 这里确实需要执行 run 方法，是为了重新 对 activeEffct 进行赋值
+    effect.run()
+  }
 }
 
 // 副作用函数
@@ -97,7 +117,15 @@ export function effect<T = any>(fn: () => T) {
  * 响应性触发依赖时的执行类
  */
 export class ReactiveEffect<T = any> {
-  constructor(public fn: () => T) {}
+  /**
+   * 存在该属性，则表示当前的 effect 为计算属性的 effect
+   */
+  computed?: ComputedRefImpl<T>
+
+  constructor(
+    public fn: () => T,
+    public schedule: EffectScheduler | null = null
+  ) {}
 
   run() {
     // 将当前实例对象赋值给 全局的 activeEffect变量
