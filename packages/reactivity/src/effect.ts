@@ -1,5 +1,11 @@
+import { extend } from '@vue/shared'
 import { ComputedRefImpl } from './computed'
 import { Dep, createDep } from './dep'
+
+export interface ReactiveEffectOptions {
+  lazy?: boolean
+  scheduler?: EffectScheduler
+}
 
 type KeyToDepMap = Map<any, Dep>
 
@@ -107,10 +113,19 @@ export function triggerEffect(effect: ReactiveEffect) {
 }
 
 // 副作用函数
-export function effect<T = any>(fn: () => T) {
+export function effect<T = any>(fn: () => T, options?: ReactiveEffectOptions) {
   const _effect = new ReactiveEffect(fn)
 
-  _effect.run()
+  // 存在 options，则合并配置对象
+  if (options) {
+    extend(_effect, options)
+  }
+
+  // !options.lazy 时
+  if (!options || !options.lazy) {
+    // 执行 run 函数
+    _effect.run()
+  }
 }
 
 /**
