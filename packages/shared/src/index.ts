@@ -30,3 +30,8 @@ export const extend = Object.assign
  * 只读的空对象
  */
 export const EMPTY_OBJ: { readonly [key: string]: any } = {}
+
+// 判断是否是字符串
+export const isString = (value: unknown) => {
+  return typeof value === 'string'
+}
