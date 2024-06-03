@@ -12,6 +12,7 @@ export interface VNode {
   props: any
   children: any
   shapeFlag: number
+  key: any
 }
 
 export function isVNode(value: any): value is VNode {
@@ -83,4 +84,11 @@ export function normalizeChildren(vnode: VNode, children: unknown) {
   vnode.children = children
   // 按位或赋值  标识vnode的类型 第二次代表children 的类型，将第一次和第二次的合并起来，用来同时标识dom类型和children类型
   vnode.shapeFlag |= type // 32位 按位运算
+}
+
+/**
+ * 根据 key || type 判断是否为相同类型节点
+ */
+export function isSameVNodeType(n1: VNode, n2: VNode): boolean {
+  return n1.type === n2.type && n1.key === n2.key
 }
