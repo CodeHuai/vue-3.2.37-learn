@@ -35,3 +35,9 @@ export const EMPTY_OBJ: { readonly [key: string]: any } = {}
 export const isString = (value: unknown) => {
   return typeof value === 'string'
 }
+
+const onRE = /^on[^a-z]/
+/**
+ * 是否 on 开头，处理点击事件
+ */
+export const isOn = (key: string) => onRE.test(key)

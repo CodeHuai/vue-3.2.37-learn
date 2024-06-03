@@ -25,7 +25,7 @@ export function isVNode(value: any): value is VNode {
  * @param children 子节点
  * @returns vnode 对象
  */
-export function createVNode(type, props, children): VNode {
+export function createVNode(type, props, children?): VNode {
   // 通过 bit 位处理 shapeFlag 类型， 标识dom的类型 第一次
   const shapeFlag = isString(type)
     ? ShapeFlags.ELEMENT
