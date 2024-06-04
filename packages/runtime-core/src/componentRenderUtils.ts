@@ -5,7 +5,8 @@ import { ShapeFlags } from 'packages/shared/src/shapeFlags'
  * 解析 render 函数的返回值
  */
 export function renderComponentRoot(instance) {
-  const { vnode, render } = instance
+  // const { vnode, render } = instance
+  const { vnode, render, data } = instance
 
   let result
   try {
@@ -13,7 +14,8 @@ export function renderComponentRoot(instance) {
     if (vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
       // 获取到 result 返回值
       // 注意这里执行了 render 也就是执行了 测试文件中 render-component.html 中的 h('div', 'hello component')函数
-      result = normalizeVNode(render!())
+      // result = normalizeVNode(render!())
+      result = normalizeVNode(render!.call(data))
     }
   } catch (err) {
     console.error(err)

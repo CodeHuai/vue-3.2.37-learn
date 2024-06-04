@@ -1,4 +1,22 @@
+import { reactive } from '@vue/reactivity'
+import { isObject } from '@vue/shared'
+
 let uid = 0
+
+function applyOptions(instance: any) {
+  const { data: dataOptions } = instance.type
+
+  // 存在 data 选项时
+  if (dataOptions) {
+    // 触发 dataOptions 函数，拿到 data 对象
+    const data = dataOptions()
+    // 如果拿到的 data 是一个对象
+    if (isObject(data)) {
+      // 则把 data 包装成 reactiv 的响应性数据，赋值给 instance
+      instance.data = reactive(data)
+    }
+  }
+}
 
 /**
  * 根据 vnode 创建组件实例
@@ -36,4 +54,7 @@ export function finishComponentSetup(instance) {
   const Component = instance.type
 
   instance.render = Component.render
+
+  // 改变 options 中的 this 指向
+  applyOptions(instance)
 }
