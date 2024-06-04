@@ -9,46 +9,32 @@
   <body>
     <div id="app"></div>
     <script>
-      // 挂载逻辑
-      // const { h, render } = Vue
-
-      // const vnode = h(
-      //   'div',
-      //   {
-      //     class: 'test'
-      //   },
-      //   'hello render'
-      // )
-
-      // console.log(vnode)
-
-      // render(vnode, document.querySelector('#app'))
-
-      // 更新逻辑
       const { h, render } = Vue
 
       const vnode = h(
         'div',
         {
-          class: 'test'
+          style: {
+            color: 'red'
+          }
         },
-        'hello render'
+        '你好，世界'
       )
-
+      // 挂载
       render(vnode, document.querySelector('#app'))
 
-      // 延迟两秒，生成新的 vnode，进行更新操作
       setTimeout(() => {
         const vnode2 = h(
-          'h1',
+          'div',
           {
-            class: 'active'
+            style: {
+              fontSize: '32px'
+            }
           },
-          'update'
+          '你好，世界'
         )
+        // 挂载
         render(vnode2, document.querySelector('#app'))
-
-        // render(null, document.querySelector('#app')) // 节点的卸载操作
       }, 2000)
     </script>
   </body>

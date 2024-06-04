@@ -9,46 +9,33 @@
   <body>
     <div id="app"></div>
     <script>
-      // 挂载逻辑
-      // const { h, render } = Vue
-
-      // const vnode = h(
-      //   'div',
-      //   {
-      //     class: 'test'
-      //   },
-      //   'hello render'
-      // )
-
-      // console.log(vnode)
-
-      // render(vnode, document.querySelector('#app'))
-
-      // 更新逻辑
       const { h, render } = Vue
 
       const vnode = h(
-        'div',
+        'button',
         {
-          class: 'test'
+          // 注意：不可以使用 onclick。因为 onclick 无法满足 /^on[^a-z]/ 的判断条件，这会导致 event 通过 ：el[key] = value 的方式绑定（虽然这样也可以绑定 event），从而无法进入 patchEvent。在项目中，当我们通过 @click 绑定属性时，会得到 onClick 选项
+          onClick() {
+            alert('点击')
+          }
         },
-        'hello render'
+        '点击'
       )
-
+      // 挂载
       render(vnode, document.querySelector('#app'))
 
-      // 延迟两秒，生成新的 vnode，进行更新操作
       setTimeout(() => {
         const vnode2 = h(
-          'h1',
+          'button',
           {
-            class: 'active'
+            onDblclick() {
+              alert('双击')
+            }
           },
-          'update'
+          '双击'
         )
+        // 挂载
         render(vnode2, document.querySelector('#app'))
-
-        // render(null, document.querySelector('#app')) // 节点的卸载操作
       }, 2000)
     </script>
   </body>
