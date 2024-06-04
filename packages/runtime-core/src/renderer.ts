@@ -1,7 +1,10 @@
 import { ShapeFlags } from 'packages/shared/src/shapeFlags'
 import { Fragment, isSameVNodeType } from './vnode'
 import { EMPTY_OBJ, isString } from '@vue/shared'
-import { normalizeVNode } from './componentRenderUtils'
+import { normalizeVNode, renderComponentRoot } from './componentRenderUtils'
+import { createComponentInstance, setupComponent } from './component'
+import { ReactiveEffect } from 'packages/reactivity/src/effect'
+import { queuePreFlushCb } from './scheduler'
 
 /**
  * 1：区分挂载和更新
@@ -76,6 +79,64 @@ function baseCreateRenderer(options: RendererOptions): any {
     setText: hostSetText,
     createComment: hostCreateComment
   } = options
+
+  const setupRenderEffect = (instance, initialVNode, container, anchor) => {
+    // 组件挂载和更新的方法
+    const componentUpdateFn = () => {
+      // 当前处于 mounted 之前，即执行 挂载 逻辑
+      if (!instance.isMounted) {
+        // 从 render 中获取需要渲染的内容
+        const subTree = (instance.subTree = renderComponentRoot(instance))
+
+        // 通过 patch 对 subTree，进行打补丁。即：渲染组件
+        patch(null, subTree, container, anchor)
+
+        // 把组件根节点的 el，作为组件的 el
+        initialVNode.el = subTree.el
+      } else {
+      }
+    }
+
+    // 创建包含 scheduler 的 effect 实例
+    const effect = (instance.effect = new ReactiveEffect(
+      componentUpdateFn,
+      () => queuePreFlushCb(update)
+    ))
+
+    // 生成 update 函数
+    const update = (instance.update = () => effect.run())
+
+    // 触发 update 函数，本质上触发的是 componentUpdateFn
+    update()
+  }
+
+  /**
+   * 挂载组件
+   * @param initialVNode 新vnode
+   * @param container 挂载容器
+   * @param anchor 锚点
+   */
+  const mountComponent = (initialVNode, container, anchor) => {
+    // 生成组件实例
+    initialVNode.component = createComponentInstance(initialVNode)
+
+    // 浅拷贝，绑定同一块内存空间
+    const instance = initialVNode.component
+
+    // 标准化组件实例数据 初始化一些组件实例的属性
+    setupComponent(instance)
+
+    // 设置组件渲染
+    setupRenderEffect(instance, initialVNode, container, anchor)
+  }
+
+  // 组件的打补丁
+  const processComponent = (oldVNode, newVNode, container, anchor) => {
+    if (oldVNode == null) {
+      // 挂载
+      mountComponent(newVNode, container, anchor)
+    }
+  }
 
   /**
    * 挂载子节点
@@ -314,6 +375,7 @@ function baseCreateRenderer(options: RendererOptions): any {
           processElement(oldVNode, newVNode, container, anchor)
         } else if (shapeFlag & ShapeFlags.COMPONENT) {
           // TODO: 组件
+          processComponent(oldVNode, newVNode, container, anchor)
         }
     }
   }
