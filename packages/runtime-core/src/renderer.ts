@@ -85,15 +85,48 @@ function baseCreateRenderer(options: RendererOptions): any {
     const componentUpdateFn = () => {
       // 当前处于 mounted 之前，即执行 挂载 逻辑
       if (!instance.isMounted) {
+        // 获取 hook
+        const { bm, m } = instance
+
+        // beforeMount hook
+        if (bm) {
+          bm()
+        }
+
         // 从 render 中获取需要渲染的内容
         const subTree = (instance.subTree = renderComponentRoot(instance))
 
         // 通过 patch 对 subTree，进行打补丁。即：渲染组件
         patch(null, subTree, container, anchor)
 
+        // mounted hook
+        if (m) {
+          m()
+        }
+
         // 把组件根节点的 el，作为组件的 el
         initialVNode.el = subTree.el
+
+        // 修改 mounted 状态
+        instance.isMounted = true
       } else {
+        let { next, vnode } = instance
+        if (!next) {
+          next = vnode
+        }
+
+        // 获取下一次的 subTree
+        const nextTree = renderComponentRoot(instance)
+
+        // 保存对应的 subTree，以便进行更新操作
+        const prevTree = instance.subTree
+        instance.subTree = nextTree
+
+        // 通过 patch 进行更新操作
+        patch(prevTree, nextTree, container, anchor)
+
+        // 更新 next
+        next.el = nextTree.el
       }
     }
 
